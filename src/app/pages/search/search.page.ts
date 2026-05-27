@@ -7,7 +7,7 @@ import { MenuOverride } from '../../menu/state/menu.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MenuOverrideDirective],
   template: `
-    <section class="page" [menuOverride]="override">
+    <section class="page" [menuOverride]="override" menuOverrideKey="search-page">
       <h1>Search</h1>
       <p>
         This page hides the <strong>Search</strong> button in the right side of the main menu, since

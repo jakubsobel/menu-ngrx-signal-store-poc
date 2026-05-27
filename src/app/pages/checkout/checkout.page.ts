@@ -7,7 +7,7 @@ import { MenuOverride } from '../../menu/state/menu.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MenuOverrideDirective],
   template: `
-    <section class="page" [menuOverride]="override">
+    <section class="page" [menuOverride]="override" menuOverrideKey="checkout-page">
       <h1>Checkout</h1>
       <p>
         On checkout we hide the country picker (the shipping country was already chosen earlier) and

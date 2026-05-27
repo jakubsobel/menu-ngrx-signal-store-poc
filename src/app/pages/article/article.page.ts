@@ -33,7 +33,7 @@ const ARTICLES: Record<string, Article> = {
   template: `
     @let article = currentArticle();
     @if (article) {
-      <article class="page" [menuOverride]="override()">
+      <article class="page" [menuOverride]="override()" menuOverrideKey="article-page">
         <h1>{{ article.title }}</h1>
         <p>{{ article.body }}</p>
         <p><a routerLink="/">← Back to Home</a></p>

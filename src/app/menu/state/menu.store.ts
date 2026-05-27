@@ -1,9 +1,21 @@
-import { computed } from '@angular/core';
+import {
+  PLATFORM_ID,
+  TransferState,
+  computed,
+  effect,
+  inject,
+  makeStateKey,
+} from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { httpResource } from '@angular/common/http';
-import { signalStore, withComputed, withProps, withState } from '@ngrx/signals';
+import { signalStore, withComputed, withHooks, withProps, withState } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 import { menuPageEvents } from './menu-events';
 import { MenuCmsData, MenuState, RegisteredOverride, RightButton } from './menu.types';
+
+type OverridesMap = Readonly<Record<string, RegisteredOverride>>;
+
+const OVERRIDES_STATE_KEY = makeStateKey<OverridesMap>('menu.overrides');
 
 const initialState: MenuState = {
   overrides: {},
@@ -12,15 +24,25 @@ const initialState: MenuState = {
   userThemeId: null,
 };
 
-function sortedOverrides(
-  overrides: Readonly<Record<string, RegisteredOverride>>,
-): readonly RegisteredOverride[] {
+function sortedOverrides(overrides: OverridesMap): readonly RegisteredOverride[] {
   return Object.values(overrides).sort((a, b) => a.seq - b.seq);
 }
 
 export const MenuStore = signalStore(
   { providedIn: 'root' },
-  withState<MenuState>(initialState),
+  withState<MenuState>(() => {
+    const transferState = inject(TransferState);
+    const seeded = transferState.get(OVERRIDES_STATE_KEY, null);
+    if (!seeded) {
+      return initialState;
+    }
+    const maxSeq = Object.values(seeded).reduce((max, o) => Math.max(max, o.seq), -1);
+    return {
+      ...initialState,
+      overrides: seeded,
+      nextOverrideSeq: maxSeq + 1,
+    };
+  }),
   withProps(() => ({
     menuResource: httpResource<MenuCmsData>(() => '/api/menu'),
   })),
@@ -31,17 +53,20 @@ export const MenuStore = signalStore(
     on(menuPageEvents.themeManuallyChanged, ({ payload }) => ({
       userThemeId: payload,
     })),
-    on(menuPageEvents.registerOverride, ({ payload }, state) => ({
-      overrides: {
-        ...state.overrides,
-        [payload.id]: {
-          id: payload.id,
-          seq: state.nextOverrideSeq,
-          override: payload.override,
+    on(menuPageEvents.registerOverride, ({ payload }, state) => {
+      const existing = state.overrides[payload.id];
+      return {
+        overrides: {
+          ...state.overrides,
+          [payload.id]: {
+            id: payload.id,
+            seq: existing ? existing.seq : state.nextOverrideSeq,
+            override: payload.override,
+          },
         },
-      },
-      nextOverrideSeq: state.nextOverrideSeq + 1,
-    })),
+        nextOverrideSeq: existing ? state.nextOverrideSeq : state.nextOverrideSeq + 1,
+      };
+    }),
     on(menuPageEvents.updateOverride, ({ payload }, state) => {
       const existing = state.overrides[payload.id];
       if (!existing) {
@@ -149,5 +174,16 @@ export const MenuStore = signalStore(
       countries: computed(() => cmsData()?.countries ?? []),
       themes: computed(() => cmsData()?.themes ?? []),
     };
+  }),
+  withHooks({
+    onInit(store) {
+      if (!isPlatformServer(inject(PLATFORM_ID))) {
+        return;
+      }
+      const transferState = inject(TransferState);
+      effect(() => {
+        transferState.set(OVERRIDES_STATE_KEY, store.overrides());
+      });
+    },
   }),
 );
