@@ -1,0 +1,34 @@
+@let logo = store.logo();
+
+<nav class="menu-bar" aria-label="Main">
+  <div class="menu-left">
+    @if (logo) {
+      <a class="logo" [routerLink]="logo.href" [attr.aria-label]="logo.label + ' home'">
+        <span class="logo-mark" aria-hidden="true">◆</span>
+        <span class="logo-text">{{ logo.label }}</span>
+      </a>
+    } @else if (store.isLoading()) {
+      <span class="logo logo-skeleton" aria-hidden="true">…</span>
+    }
+  </div>
+
+  <ul class="menu-center" role="menubar" aria-label="Sections">
+    @for (item of store.centerItems(); track item.id) {
+      <li role="none">
+        <app-dropdown-item role="menuitem" [menuItem]="item" [depth]="0" />
+      </li>
+    }
+  </ul>
+
+  <div class="menu-right">
+    <app-right-buttons [buttons]="store.rightButtons()" (actionClicked)="onAction($event)" />
+    @if (store.isCountryPickerVisible()) {
+      <app-country-picker />
+    }
+    <app-theme-picker />
+  </div>
+</nav>
+
+@if (store.hasError()) {
+  <div class="menu-error" role="status">Menu failed to load.</div>
+}

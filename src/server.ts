@@ -6,23 +6,17 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import { MENU_FIXTURE } from './app/menu/state/menu.fixture';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-/**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
+app.get('/api/menu', (_req, res) => {
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json(MENU_FIXTURE);
+});
 
 /**
  * Serve static files from /browser
