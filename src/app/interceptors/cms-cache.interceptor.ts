@@ -29,7 +29,7 @@ export const cmsCacheInterceptor: HttpInterceptorFn = (
   const cache = inject(CmsServerCache);
   const hit = cache.get(req.url);
   if (hit && hit.expires > Date.now()) {
-    return of(new HttpResponse({ status: 200, body: hit.value }));
+    return of(new HttpResponse({ status: 200, body: hit.value, url: req.url }));
   }
 
   const ttl = ttlFor(req.url);

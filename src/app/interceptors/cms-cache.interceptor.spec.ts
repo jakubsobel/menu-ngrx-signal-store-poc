@@ -69,6 +69,14 @@ describe('cmsCacheInterceptor', () => {
     httpMock.expectOne('/other/thing').flush({});
     expect(cache.get('/other/thing')).toBeUndefined();
   });
+
+  it('uses the longer TTL for /api/menu, /api/footer, /api/sitemap', () => {
+    const before = Date.now();
+    http.get('/api/menu').subscribe();
+    httpMock.expectOne('/api/menu').flush([]);
+    const entry = cache.get('/api/menu');
+    expect(entry?.expires).toBeGreaterThan(before + 240_000); // > 4 min, well above the 60s page TTL
+  });
 });
 
 describe('cmsCacheInterceptor on the browser', () => {
