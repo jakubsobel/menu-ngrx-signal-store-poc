@@ -51,6 +51,18 @@ app.use(
 );
 
 /**
+ * Serve robots.txt.
+ */
+app.get('/robots.txt', (req, res) => {
+  const origin = `${req.protocol}://${req.get('host')}`;
+  const disallow = process.env['ROBOTS_DISALLOW_ALL'] === 'true' ? 'Disallow: /\n' : '';
+  res.setHeader('Cache-Control', 'public, s-maxage=300');
+  res.type('text/plain').send(
+    `User-agent: *\n${disallow}Sitemap: ${origin}/sitemap.xml\n`,
+  );
+});
+
+/**
  * Serve sitemap.xml, proxied from the CMS API.
  */
 app.get('/sitemap.xml', async (req, res) => {
