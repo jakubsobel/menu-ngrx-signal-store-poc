@@ -19,6 +19,27 @@ app.get('/api/menu', (_req, res) => {
 });
 
 /**
+ * Set Cache-Control headers based on the final response status code.
+ * Placed before static-file and Angular handlers so it captures all responses.
+ */
+app.use((req, res, next) => {
+  const originalEnd = res.end.bind(res);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (res as any).end = function (...args: unknown[]) {
+    if (!res.headersSent) {
+      if (res.statusCode === 200) {
+        res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
+      } else if (res.statusCode === 404) {
+        res.setHeader('Cache-Control', 'public, s-maxage=10');
+      }
+      res.setHeader('Vary', 'Accept-Encoding');
+    }
+    return originalEnd(...(args as []));
+  };
+  next();
+});
+
+/**
  * Serve static files from /browser
  */
 app.use(
