@@ -1,0 +1,14 @@
+@if (isNotFound()) {
+  <app-not-found />
+} @else if (currentPage(); as page) {
+  <div [menuOverride]="menuOverride()" menuOverrideKey="cms-page-theme">
+    @switch (page.hero.kind) {
+      @case ('text')  { <cms-hero-text  [hero]="$any(page.hero)" /> }
+    }
+    @for (block of page.components; track block.id) {
+      <app-cms-block-host [block]="block" />
+    }
+  </div>
+} @else {
+  <app-page-waiter />
+}

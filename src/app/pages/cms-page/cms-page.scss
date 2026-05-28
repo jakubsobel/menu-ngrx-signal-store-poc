@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  background: var(--bg, var(--shell-bg, #ffffff));
+  color: var(--fg, var(--shell-fg, #111827));
+  min-height: 60vh;
+}
+
+:host[data-theme="neutral"] {
+  --bg: var(--shell-bg, #ffffff);
+  --fg: var(--shell-fg, #111827);
+  --accent: #2563eb;
+  --surface: rgba(0,0,0,0.04);
+}
