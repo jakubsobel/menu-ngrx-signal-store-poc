@@ -12,7 +12,7 @@ import { CmsFaqSkeleton } from '../components/faq/cms-faq.skeleton';
     @switch (block().kind) {
       @case ('faq') {
         @defer (on viewport; prefetch on idle) {
-          <cms-faq [block]="block()" />
+          <cms-faq [block]="$any(block())" />
         } @placeholder {
           <cms-faq-skeleton />
         }
