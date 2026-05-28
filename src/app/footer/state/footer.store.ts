@@ -1,17 +1,12 @@
-import {
-  PLATFORM_ID,
-  TransferState,
-  computed,
-  inject,
-  makeStateKey,
-} from '@angular/core';
-import { isPlatformServer } from '@angular/common';
+import { computed } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import { signalStore, withComputed, withHooks, withProps } from '@ngrx/signals';
+import { signalStore, withComputed, withProps } from '@ngrx/signals';
 import { FooterCmsData } from './footer.types';
 
-const FOOTER_STATE_KEY = makeStateKey<FooterCmsData>('footer.cache');
-
+// SSR → client handoff is handled automatically by `withHttpTransferCache`
+// (default in `provideClientHydration`) — the server `/api/footer` response is
+// replayed in the browser without re-fetching, so no manual `TransferState`
+// serialization is needed here.
 export const FooterStore = signalStore(
   { providedIn: 'root' },
 
@@ -30,16 +25,11 @@ export const FooterStore = signalStore(
       store.footerResource.hasValue() ? store.footerResource.value().legal : null,
     ),
     isLoading: computed(() => store.footerResource.isLoading()),
-  })),
-
-  withHooks((store) => ({
-    onInit() {
-      const ts = inject(TransferState);
-      if (isPlatformServer(inject(PLATFORM_ID))) {
-        ts.onSerialize(FOOTER_STATE_KEY, () =>
-          store.footerResource.hasValue() ? store.footerResource.value() : null,
-        );
-      }
-    },
+    hasError: computed(() => store.footerResource.error() != null),
+    loadError: computed(() => {
+      const err = store.footerResource.error();
+      if (err == null) return null;
+      return err instanceof Error ? err.message : String(err);
+    }),
   })),
 );

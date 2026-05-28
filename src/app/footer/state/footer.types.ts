@@ -13,7 +13,3 @@ export interface FooterCmsData {
   readonly columns: ReadonlyArray<FooterColumn>;
   readonly legal: FooterLegal;
 }
-
-export interface FooterState {
-  // FooterStore reads everything from the httpResource; no extra state needed.
-}
