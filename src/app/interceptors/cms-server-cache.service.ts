@@ -5,6 +5,13 @@ export interface CacheEntry {
   expires: number; // epoch ms
 }
 
+/**
+ * Server-side TTL cache. Intended use: the `cmsCacheInterceptor` reads/writes
+ * this on the SSR Node process only — every interceptor code path is gated on
+ * `isPlatformServer(...)`. Registered with `providedIn: 'root'` for ergonomics
+ * (no separate browser/server registration); the browser DI tree gets an empty
+ * instance that is never touched.
+ */
 @Injectable({ providedIn: 'root' })
 export class CmsServerCache {
   private readonly store = new Map<string, CacheEntry>();
