@@ -1,0 +1,22 @@
+.block-header {
+  max-width: 60rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.875rem;
+  color: var(--accent, #2563eb);
+  margin: 0 0 0.5rem;
+}
+.title {
+  font-size: 1.75rem;
+  margin: 0 0 0.75rem;
+  color: var(--fg);
+}
+.description {
+  margin: 0;
+  color: var(--fg);
+  opacity: 0.85;
+}
