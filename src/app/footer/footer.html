@@ -1,0 +1,24 @@
+<footer class="footer">
+  <div class="cols">
+    @for (col of store.columns(); track col.id) {
+      <section>
+        <h3>{{ col.title }}</h3>
+        <ul>
+          @for (link of col.links; track link.id) {
+            <li><a [href]="link.href">{{ link.label }}</a></li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+  @if (store.legal(); as l) {
+    <div class="legal">
+      <p>{{ l.copyright }}</p>
+      <ul>
+        @for (link of l.links; track link.id) {
+          <li><a [href]="link.href">{{ link.label }}</a></li>
+        }
+      </ul>
+    </div>
+  }
+</footer>
