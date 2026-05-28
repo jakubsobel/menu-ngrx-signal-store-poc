@@ -82,5 +82,13 @@ export class CmsPage {
       this.seoSync.applyMeta(page.seo);
       this.seoSync.applyJsonLd(page.seo.jsonLd);
     });
+
+    // NOTE (F2 / SSR 404): @angular/ssr v21 does NOT export RESPONSE_INIT,
+    // REQUEST, or REQUEST_CONTEXT as public DI tokens. The ssr.d.ts exports
+    // only IS_DISCOVERING_ROUTES, RenderMode, PrerenderFallback, and the
+    // provideServerRendering/withRoutes/withAppShell/createRequestHandler
+    // functions. Setting a 404 status on the SSR response from inside a
+    // component is not possible without using internal (ɵ-prefixed) APIs.
+    // Revisit when a public RESPONSE_INIT token is available.
   }
 }
