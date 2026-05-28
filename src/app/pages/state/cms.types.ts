@@ -8,75 +8,75 @@ export type PageType =
   | 'article-dark';
 
 export interface Cta {
-  label: string;
-  href: string;
-  variant?: 'primary' | 'secondary' | 'link';
+  readonly label: string;
+  readonly href: string;
+  readonly variant?: 'primary' | 'secondary' | 'link';
 }
 
 export interface ImageRef {
-  src: string;
-  alt: string;
-  width: number;
-  height: number;
-  decorative?: boolean;
+  readonly src: string;
+  readonly alt: string;
+  readonly width: number;
+  readonly height: number;
+  readonly decorative?: boolean;
 }
 
 export interface VideoRef {
-  src: string;
-  type: 'mp4' | 'webm' | 'youtube' | 'vimeo';
-  captionsSrc?: string;
+  readonly src: string;
+  readonly type: 'mp4' | 'webm' | 'youtube' | 'vimeo';
+  readonly captionsSrc?: string;
 }
 
 export interface SeoData {
-  title: string;
-  description: string;
-  canonical?: string;
-  robots?: string;
-  ogTitle?: string;
-  ogDescription?: string;
-  ogImage?: string;
-  twitterCard?: 'summary' | 'summary_large_image';
-  jsonLd?: object | object[];
+  readonly title: string;
+  readonly description: string;
+  readonly canonical?: string;
+  readonly robots?: string;
+  readonly ogTitle?: string;
+  readonly ogDescription?: string;
+  readonly ogImage?: string;
+  readonly twitterCard?: 'summary' | 'summary_large_image';
+  readonly jsonLd?: object | object[];
 }
 
 export type HeroBlock =
-  | { kind: 'text'; title: string; description?: string; cta?: Cta }
-  | { kind: 'image'; title: string; description?: string; image: ImageRef; cta?: Cta }
-  | { kind: 'video'; title: string; description?: string; video: VideoRef; poster?: ImageRef; cta?: Cta };
+  | { readonly kind: 'text'; readonly title: string; readonly description?: string; readonly cta?: Cta }
+  | { readonly kind: 'image'; readonly title: string; readonly description?: string; readonly image: ImageRef; readonly cta?: Cta }
+  | { readonly kind: 'video'; readonly title: string; readonly description?: string; readonly video: VideoRef; readonly poster?: ImageRef; readonly cta?: Cta };
 
 export interface ComponentBase {
-  id: string;
-  label?: string;
-  title?: string;
-  description?: string;
-  cta?: Cta;
+  readonly id: string;
+  readonly label?: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly cta?: Cta;
 }
 
 export interface FaqItem {
-  id: string;
-  question: string;
-  answer: string;
+  readonly id: string;
+  readonly question: string;
+  readonly answer: string;
 }
 
 export interface FaqFields {
-  items: FaqItem[];
+  readonly items: readonly FaqItem[];
 }
 
 export interface ImageTextFields {
-  image: ImageRef;
-  body: string;
-  layout?: 'image-left' | 'image-right';
+  readonly image: ImageRef;
+  readonly body: string;
+  readonly layout?: 'image-left' | 'image-right';
 }
 
 export type ComponentBlock =
-  | ({ kind: 'faq' } & ComponentBase & FaqFields)
-  | ({ kind: 'image-text' } & ComponentBase & ImageTextFields);
+  | ({ readonly kind: 'faq' } & ComponentBase & FaqFields)
+  | ({ readonly kind: 'image-text' } & ComponentBase & ImageTextFields);
 // NOTE: extend this union as new component types are added (see spec "Adding the 31st component type").
 
 export interface CmsPage {
-  slug: string;
-  pageType: PageType;
-  seo: SeoData;
-  hero: HeroBlock;
-  components: ComponentBlock[];
+  readonly slug: string;
+  readonly pageType: PageType;
+  readonly seo: SeoData;
+  readonly hero: HeroBlock;
+  readonly components: readonly ComponentBlock[];
 }
