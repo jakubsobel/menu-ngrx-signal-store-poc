@@ -5,6 +5,7 @@
     @switch (page.hero.kind) {
       @case ('text')  { <cms-hero-text  [hero]="$any(page.hero)" /> }
       @case ('image') { <cms-hero-image [hero]="$any(page.hero)" /> }
+      @case ('video') { <cms-hero-video [hero]="$any(page.hero)" /> }
     }
     @for (block of page.components; track block.id) {
       <app-cms-block-host [block]="block" />
