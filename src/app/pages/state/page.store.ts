@@ -1,5 +1,5 @@
 // src/app/pages/state/page.store.ts
-import { computed, effect, linkedSignal, signal } from '@angular/core';
+import { computed, effect, signal } from '@angular/core';
 import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import {
   patchState,
@@ -17,15 +17,18 @@ import { PageState } from './page.types';
 // SSR → client handoff for the just-rendered page is handled by
 // `withHttpTransferCache` (default in `provideClientHydration`): the server
 // `/api/page/:slug` response is replayed in the browser without re-fetching,
-// httpResource emits the value, and `pageMap`/`notFoundSlugs` accumulate it.
+// httpResource emits the value, and the cache accumulators pick it up.
 //
-// Design note on effect() usage:
-// Two plain WritableSignals (`pageMap`, `notFoundSlugs`) serve as the cache
-// stores and are read by the httpResource URL factory (plain signals don't
-// create reactive cycles with httpResource's internal linkedSignal chain).
-// Effects in onInit imperatively sync httpResource results into these signals.
-// This is a legitimate use of effect() for bridging an async resource API to
-// local state — NOT a signal→signal state propagation pattern.
+// Why effect() here:
+// `pageMap` and `notFoundSlugs` must skip the network on cache-hit, which
+// means the httpResource URL factory has to read them. If both sides are
+// reactive (linkedSignal sourced from pageResource ↔ URL factory reading
+// pageMap), Angular's signal engine detects a cycle through extRequest and
+// throws "Detected cycle in computations." The escape is to make the cache
+// imperative — plain `signal()` writes that are bridged from the async
+// resource via narrow effects. This is the canonical "async result → state"
+// pattern; we're not propagating between user signals, we're absorbing the
+// result of an external async API into local store state.
 export const PageStore = signalStore(
   { providedIn: 'root' },
 
@@ -33,16 +36,15 @@ export const PageStore = signalStore(
 
   withProps((store) => {
     // Plain WritableSignals for the cache. Reading them inside httpResource's
-    // URL factory is safe: plain signals have no source/computation machinery
-    // that could create reactive cycles through httpResource's extRequest
-    // linkedSignal chain.
+    // URL factory is safe because plain signals have no source/computation
+    // machinery that could form a reactive cycle through extRequest.
     const pageMap = signal<Record<string, CmsPage>>({});
     const notFoundSlugs = signal<ReadonlySet<string>>(new Set<string>());
 
     const pageResource = httpResource<CmsPage>(() => {
       const slug = store.currentSlug();
       if (!slug) return undefined;
-      // Skip fetch when the slug is already cached or marked not-found.
+      // Skip fetch when the slug is already cached or known to be 404.
       if (pageMap()[slug] || notFoundSlugs().has(slug)) return undefined;
       return `/api/page/${encodeURIComponent(slug)}`;
     });
@@ -80,7 +82,7 @@ export const PageStore = signalStore(
 
   withHooks({
     onInit(store) {
-      // Sync httpResource success responses into the page cache.
+      // Bridge async httpResource success responses into the page cache.
       effect(() => {
         if (store.pageResource.hasValue()) {
           const page = store.pageResource.value();
@@ -91,15 +93,11 @@ export const PageStore = signalStore(
         }
       });
 
-      // Sync httpResource 404 errors into the not-found set.
+      // Bridge 404 errors into the not-found set.
       effect(() => {
         const err = store.pageResource.error();
         const slug = store.currentSlug();
-        if (
-          slug &&
-          err instanceof HttpErrorResponse &&
-          err.status === 404
-        ) {
+        if (slug && err instanceof HttpErrorResponse && err.status === 404) {
           store.notFoundSlugs.update((set) => {
             if (set.has(slug)) return set;
             const next = new Set(set);
