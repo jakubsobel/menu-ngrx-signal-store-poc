@@ -13,6 +13,7 @@ import { MenuOverrideDirective } from '../../menu/menu-override.directive';
 import { MenuOverride } from '../../menu/state/menu.types';
 import { PageStore } from '../state/page.store';
 import { CmsHeroText } from '../../cms/hero/cms-hero-text';
+import { CmsHeroImage } from '../../cms/hero/cms-hero-image';
 import { CmsBlockHost } from '../../cms/block-host/cms-block-host';
 import { SeoSyncService } from '../../cms/seo/seo-sync.service';
 import { PageWaiter } from './page-waiter/page-waiter';
@@ -23,6 +24,7 @@ import { NotFoundPage } from './not-found/not-found';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CmsHeroText,
+    CmsHeroImage,
     CmsBlockHost,
     PageWaiter,
     NotFoundPage,
