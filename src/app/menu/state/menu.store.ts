@@ -89,7 +89,9 @@ export const MenuStore = signalStore(
     }),
   ),
   withComputed((store) => {
-    const cmsData = computed(() => store.menuResource.value() ?? null);
+    const cmsData = computed(() =>
+      store.menuResource.hasValue() ? store.menuResource.value() : null,
+    );
     const isLoading = computed(() => store.menuResource.isLoading());
     const hasError = computed(() => store.menuResource.error() != null);
     const loadError = computed(() => {

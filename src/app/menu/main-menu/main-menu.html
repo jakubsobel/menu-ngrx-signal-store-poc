@@ -21,7 +21,7 @@
   </ul>
 
   <div class="menu-right">
-    <app-right-buttons [buttons]="store.rightButtons()" (actionClicked)="onAction($event)" />
+    <app-right-buttons [buttons]="store.rightButtons()" />
     @if (store.isCountryPickerVisible()) {
       <app-country-picker />
     }

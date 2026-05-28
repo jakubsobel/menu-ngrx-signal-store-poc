@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 import { CountryPicker } from '../country-picker/country-picker';
 import { DropdownItem } from '../dropdown-item/dropdown-item';
 import { MenuStore } from '../state/menu.store';
-import { RightButton } from '../state/menu.types';
 import { RightButtons } from '../right-buttons/right-buttons';
 import { ThemePicker } from '../theme-picker/theme-picker';
 
@@ -22,8 +21,4 @@ import { ThemePicker } from '../theme-picker/theme-picker';
 })
 export class MainMenu {
   protected readonly store = inject(MenuStore);
-
-  onAction(button: RightButton): void {
-    console.log('[MainMenu] action button clicked:', button.eventId ?? button.id);
-  }
 }
