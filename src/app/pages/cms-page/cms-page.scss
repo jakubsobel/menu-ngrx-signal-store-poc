@@ -1,13 +1,44 @@
 :host {
   display: block;
-  background: var(--bg, var(--shell-bg, #ffffff));
-  color: var(--fg, var(--shell-fg, #111827));
+  background: var(--bg);
+  color: var(--fg);
   min-height: 60vh;
 }
 
+// Phase-1 waiter (no page payload yet)
 :host[data-theme="neutral"] {
   --bg: var(--shell-bg, #ffffff);
   --fg: var(--shell-fg, #111827);
   --accent: #2563eb;
   --surface: rgba(0,0,0,0.04);
+}
+
+:host[data-theme="landing-light"],
+:host[data-theme="article-light"] {
+  --bg: #ffffff;
+  --fg: #111827;
+  --accent: #2563eb;
+  --surface: #f9fafb;
+}
+
+:host[data-theme="landing-dark"],
+:host[data-theme="article-dark"] {
+  --bg: #0f172a;
+  --fg: #e5e7eb;
+  --accent: #60a5fa;
+  --surface: #1e293b;
+}
+
+:host[data-theme="landing-gradient"] {
+  --bg: linear-gradient(135deg, #4338ca 0%, #ec4899 100%);
+  --fg: #ffffff;
+  --accent: #fbbf24;
+  --surface: rgba(255, 255, 255, 0.08);
+}
+
+// Gradient pages need a scrim/surface backdrop behind text-heavy components
+// so contrast holds across the gradient.
+:host[data-theme="landing-gradient"] app-cms-block-host {
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(2px);
 }

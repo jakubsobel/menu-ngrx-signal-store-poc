@@ -1,1 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Shell-level CSS variables (used when no page theme is active — Phase 1 waiter).
+:root {
+  --shell-bg: #ffffff;
+  --shell-fg: #111827;
+}
