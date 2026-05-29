@@ -4,7 +4,11 @@ import {
   computed,
   effect,
   inject,
+  PLATFORM_ID,
+  REQUEST_CONTEXT,
 } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { SsrRequestContext } from '../../shell/ssr-context';
 import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -87,12 +91,14 @@ export class CmsPage {
       this.seoSync.applyJsonLd(page.seo.jsonLd);
     });
 
-    // NOTE (F2 / SSR 404): @angular/ssr v21 does NOT export RESPONSE_INIT,
-    // REQUEST, or REQUEST_CONTEXT as public DI tokens. The ssr.d.ts exports
-    // only IS_DISCOVERING_ROUTES, RenderMode, PrerenderFallback, and the
-    // provideServerRendering/withRoutes/withAppShell/createRequestHandler
-    // functions. Setting a 404 status on the SSR response from inside a
-    // component is not possible without using internal (ɵ-prefixed) APIs.
-    // Revisit when a public RESPONSE_INIT token is available.
+    if (isPlatformServer(inject(PLATFORM_ID))) {
+      const ctx = inject(REQUEST_CONTEXT, { optional: true }) as SsrRequestContext | null;
+      // Valid effect: syncing signal state → imperative Express Response API.
+      effect(() => {
+        if (this.isNotFound() && ctx?.response && !ctx.response.headersSent) {
+          ctx.response.statusCode = 404;
+        }
+      });
+    }
   }
 }

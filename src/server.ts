@@ -139,7 +139,7 @@ app.get('/sitemap.xml', async (req, res) => {
  */
 app.use((req, res, next) => {
   angularApp
-    .handle(req)
+    .handle(req, { response: res })
     .then((response) =>
       response ? writeResponseToNodeResponse(response, res) : next(),
     )
