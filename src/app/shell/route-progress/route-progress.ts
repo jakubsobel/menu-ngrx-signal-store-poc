@@ -1,11 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import {
-  NavigationCancel,
-  NavigationEnd,
-  NavigationError,
-  NavigationStart,
-  Router,
-} from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -24,16 +18,5 @@ export class RouteProgress {
   private readonly router = inject(Router);
   private readonly events = toSignal(this.router.events, { initialValue: null });
 
-  protected readonly isActive = computed(() => {
-    const e = this.events();
-    if (e instanceof NavigationStart) return true;
-    if (
-      e instanceof NavigationEnd ||
-      e instanceof NavigationCancel ||
-      e instanceof NavigationError
-    ) {
-      return false;
-    }
-    return false;
-  });
+  protected readonly isActive = computed(() => this.events() instanceof NavigationStart);
 }
