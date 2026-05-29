@@ -1,4 +1,12 @@
+<app-skip-link />
+<app-route-progress />
 <app-main-menu />
-<main class="app-main">
+<main
+  id="main-content"
+  tabindex="-1"
+  appRouteFocus
+  style="outline: none;"
+>
   <router-outlet />
 </main>
+<app-footer />

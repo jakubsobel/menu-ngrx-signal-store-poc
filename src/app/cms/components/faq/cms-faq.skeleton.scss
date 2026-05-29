@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  max-width: 50rem;
+  margin: 2rem auto;
+}
+.row {
+  height: 3rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--surface, rgba(0,0,0,0.05));
+  position: relative;
+  overflow: hidden;
+}
+.row::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  animation: shimmer 1.2s linear infinite;
+}
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .row::after { animation: none; opacity: 0.4; }
+}

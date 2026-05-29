@@ -1,0 +1,16 @@
+/* cms-faq.scss */
+:host { display: block; padding: 2rem 1.5rem; }
+.faq  { max-width: 50rem; margin: 0 auto; color: var(--fg); }
+.items { margin: 0; padding: 0; }
+.item  { padding: 1rem 0; border-bottom: 1px solid var(--surface); }
+.item:last-child { border-bottom: none; }
+dt { font-weight: 600; margin: 0 0 0.5rem; }
+dd { margin: 0; opacity: 0.9; }
+.cta {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  background: var(--accent); color: #fff; text-decoration: none;
+}
+.cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }

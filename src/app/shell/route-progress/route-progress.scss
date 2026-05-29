@@ -1,0 +1,28 @@
+:host {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  pointer-events: none;
+  z-index: 9999;
+}
+.bar {
+  height: 100%;
+  width: 0;
+  background: var(--accent, #2563eb);
+  transition: width 200ms ease-out, opacity 200ms ease-out;
+  opacity: 0;
+}
+:host.is-active .bar {
+  width: 70%;
+  opacity: 1;
+  animation: progress 1.2s ease-in-out infinite;
+}
+@keyframes progress {
+  0%   { width: 5%;  }
+  50%  { width: 70%; }
+  100% { width: 95%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar { transition: none; animation: none; }
+  :host.is-active .bar { width: 100%; animation: none; }
+}
