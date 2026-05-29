@@ -13,14 +13,14 @@ import { CmsImageTextSkeleton } from '../components/image-text/cms-image-text.sk
   template: `
     @switch (block().kind) {
       @case ('faq') {
-        @defer (on viewport; prefetch on idle) {
+        @defer (hydrate on viewport; prefetch on idle) {
           <cms-faq [block]="$any(block())" />
         } @placeholder {
           <cms-faq-skeleton />
         }
       }
       @case ('image-text') {
-        @defer (on viewport; prefetch on idle) {
+        @defer (hydrate on viewport; prefetch on idle) {
           <cms-image-text [block]="$any(block())" />
         } @placeholder {
           <cms-image-text-skeleton />
