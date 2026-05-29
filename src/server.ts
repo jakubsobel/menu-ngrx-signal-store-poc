@@ -13,6 +13,33 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+/**
+ * Resolve the canonical site origin used in sitemap/robots URLs.
+ * Prefers `PUBLIC_ORIGIN` (a trusted, operator-configured value) over the
+ * incoming `Host` header, which is attacker-controllable and would otherwise
+ * let a single poisoned request taint a long-lived public cache entry
+ * (Host Header Injection → Cache Poisoning).
+ */
+function canonicalOrigin(req: express.Request): string {
+  const configured = process.env['PUBLIC_ORIGIN'];
+  if (configured) return configured.replace(/\/+$/, '');
+  return `${req.protocol}://${req.get('host')}`;
+}
+
+/**
+ * Minimal XML text escaper. Used for every value interpolated into the
+ * sitemap so a malicious CMS response (e.g. a slug containing `<` or `&`)
+ * can't break out of an element and inject markup.
+ */
+function xmlEscape(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 app.get('/api/menu', (_req, res) => {
   res.set('Cache-Control', 'public, max-age=60');
   res.json(MENU_FIXTURE);
@@ -54,9 +81,12 @@ app.use(
  * Serve robots.txt.
  */
 app.get('/robots.txt', (req, res) => {
-  const origin = `${req.protocol}://${req.get('host')}`;
+  const origin = canonicalOrigin(req);
   const disallow = process.env['ROBOTS_DISALLOW_ALL'] === 'true' ? 'Disallow: /\n' : '';
   res.setHeader('Cache-Control', 'public, s-maxage=300');
+  // When PUBLIC_ORIGIN is not set we fall back to the Host header — vary the
+  // cache key on it so a poisoned request can't leak to other hosts.
+  if (!process.env['PUBLIC_ORIGIN']) res.setHeader('Vary', 'Host');
   res.type('text/plain').send(
     `User-agent: *\n${disallow}Sitemap: ${origin}/sitemap.xml\n`,
   );
@@ -78,20 +108,26 @@ app.get('/sitemap.xml', async (req, res) => {
       lastmod?: string;
       priority?: number;
     }[];
-    const origin = `${req.protocol}://${req.get('host')}`;
+    const origin = canonicalOrigin(req);
     const xml =
       `<?xml version="1.0" encoding="UTF-8"?>\n` +
       `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
       entries
         .map((e) => {
-          const loc = `${origin}${e.slug}`;
-          const lastmod = e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : '';
-          const prio = e.priority != null ? `<priority>${e.priority}</priority>` : '';
+          const loc = xmlEscape(`${origin}${e.slug ?? ''}`);
+          const lastmod = e.lastmod
+            ? `<lastmod>${xmlEscape(e.lastmod)}</lastmod>`
+            : '';
+          const prio =
+            typeof e.priority === 'number' && Number.isFinite(e.priority)
+              ? `<priority>${Math.max(0, Math.min(1, e.priority)).toFixed(2)}</priority>`
+              : '';
           return `  <url><loc>${loc}</loc>${lastmod}${prio}</url>`;
         })
         .join('\n') +
       `\n</urlset>\n`;
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    if (!process.env['PUBLIC_ORIGIN']) res.setHeader('Vary', 'Host');
     res.type('application/xml').send(xml);
   } catch {
     res.status(500).type('text/plain').send('Failed to build sitemap');
