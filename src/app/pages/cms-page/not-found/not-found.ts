@@ -5,7 +5,6 @@ import { RouterLink } from '@angular/router';
   selector: 'app-not-found',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
-  host: { role: 'main' },
   template: `
     <section class="not-found">
       <h1>Page not found</h1>
