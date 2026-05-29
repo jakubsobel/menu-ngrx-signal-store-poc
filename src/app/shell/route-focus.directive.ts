@@ -7,11 +7,16 @@ export class RouteFocusDirective {
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly router = inject(Router);
   private readonly events = toSignal(this.router.events, { initialValue: null });
+  private seenFirstNav = false;
 
   constructor() {
     // Valid effect: signal state → imperative DOM focus API.
     effect(() => {
       if (this.events() instanceof NavigationEnd) {
+        if (!this.seenFirstNav) {
+          this.seenFirstNav = true;
+          return;
+        }
         this.el.nativeElement.focus({ preventScroll: false });
       }
     });
