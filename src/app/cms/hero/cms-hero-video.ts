@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  afterNextRender,
+  input,
+  signal,
+} from '@angular/core';
 import { HeroBlock } from '../../pages/state/cms.types';
 
 type VideoHero = Extract<HeroBlock, { kind: 'video' }>;
@@ -16,7 +22,7 @@ type VideoHero = Extract<HeroBlock, { kind: 'video' }>;
           controls
           preload="metadata"
           playsinline
-          [muted]="autoMuted()"
+          [muted]="autoplay()"
           [autoplay]="autoplay()"
         ></video>
       </div>
@@ -33,11 +39,14 @@ type VideoHero = Extract<HeroBlock, { kind: 'video' }>;
 })
 export class CmsHeroVideo {
   readonly hero = input.required<VideoHero>();
-  protected readonly autoplay = computed(() => this.prefersMotion());
-  protected readonly autoMuted = computed(() => this.prefersMotion());
+  // SSR-safe default — autoplay only flips on after the client hydrates and
+  // we can read prefers-reduced-motion without diverging from the server DOM.
+  protected readonly autoplay = signal(false);
 
-  private prefersMotion(): boolean {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  constructor() {
+    afterNextRender(() => {
+      if (typeof window === 'undefined' || !window.matchMedia) return;
+      this.autoplay.set(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    });
   }
 }
