@@ -30,7 +30,7 @@ export class SeoSyncService {
     if (!jsonLd) return;
     const el = this.doc.createElement('script');
     el.type = 'application/ld+json';
-    el.textContent = JSON.stringify(jsonLd);
+    el.textContent = safeJsonLd(jsonLd);
     this.doc.head.appendChild(el);
     this.jsonLdEl = el;
   }
@@ -66,4 +66,26 @@ export class SeoSyncService {
       this.doc.head.appendChild(existing);
     }
   }
+}
+
+/**
+ * Serialize a JSON-LD payload safely for embedding in <script> during SSR.
+ *
+ * `JSON.stringify` does not escape `<`, `>`, `&`, or the U+2028/U+2029 line
+ * separators — all of which can break out of a <script> element during HTML
+ * serialization. We escape them as `\uXXXX` so the runtime JSON.parse still
+ * sees the same logical string, but the HTML serializer can't be tricked.
+ */
+function safeJsonLd(value: object | object[]): string {
+  // U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR cannot be embedded
+  // as literals inside a JS regex (they count as line terminators), so we
+  // build those two patterns via the RegExp constructor.
+  const ls = new RegExp('\u2028', 'g');
+  const ps = new RegExp('\u2029', 'g');
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(ls, '\\u2028')
+    .replace(ps, '\\u2029');
 }

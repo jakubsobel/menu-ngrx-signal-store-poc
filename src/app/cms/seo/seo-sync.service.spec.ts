@@ -55,4 +55,16 @@ describe('SeoSyncService', () => {
     svc.applyJsonLd(undefined);
     expect(doc.head.querySelector('script[type="application/ld+json"]')).toBeNull();
   });
+
+  it('escapes </script> in jsonLd to prevent SSR XSS', () => {
+    svc.applyJsonLd({ name: '</script><script>alert(1)</script>' });
+    const script = doc.head.querySelector('script[type="application/ld+json"]') as HTMLScriptElement | null;
+    expect(script).not.toBeNull();
+    // No literal </script> survives in the serialized output.
+    expect(script!.textContent).not.toContain('</script>');
+    // The escaped form is still valid JSON and round-trips.
+    expect(JSON.parse(script!.textContent!)).toEqual({
+      name: '</script><script>alert(1)</script>',
+    });
+  });
 });
