@@ -1,5 +1,5 @@
 // src/app/pages/state/page.store.ts
-import { computed, effect, signal } from '@angular/core';
+import { computed, effect, signal, untracked } from '@angular/core';
 import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import {
   patchState,
@@ -45,7 +45,14 @@ export const PageStore = signalStore(
       const slug = store.currentSlug();
       if (!slug) return undefined;
       // Skip fetch when the slug is already cached or known to be 404.
-      if (pageMap()[slug] || notFoundSlugs().has(slug)) return undefined;
+      // pageMap/notFoundSlugs are read inside `untracked` so the URL factory
+      // depends on currentSlug ONLY. Otherwise the success effect's
+      // `pageMap.update` would retrigger this factory, which retriggers
+      // httpResource.loadEffect, which re-registers a PendingTask on every
+      // tick — Angular SSR never reaches stable state.
+      if (untracked(() => pageMap()[slug] || notFoundSlugs().has(slug))) {
+        return undefined;
+      }
       return `/api/page/${encodeURIComponent(slug)}`;
     });
 

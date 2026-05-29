@@ -7,6 +7,8 @@ import {
 import express from 'express';
 import { join } from 'node:path';
 import { MENU_FIXTURE } from './app/menu/state/menu.fixture';
+import { FOOTER_FIXTURE } from './app/footer/state/footer.fixture';
+import { pageFixtureFor } from './app/pages/state/page.fixture';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -43,6 +45,34 @@ function xmlEscape(value: string): string {
 app.get('/api/menu', (_req, res) => {
   res.set('Cache-Control', 'public, max-age=60');
   res.json(MENU_FIXTURE);
+});
+
+app.get('/api/footer', (_req, res) => {
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json(FOOTER_FIXTURE);
+});
+
+app.get(/^\/api\/page\/(.+)$/, (req, res) => {
+  // `req.params[0]` is the captured suffix (still percent-encoded path).
+  const raw = (req.params as { 0?: string })[0] ?? '';
+  const slug = decodeURIComponent(raw);
+  const page = pageFixtureFor(slug);
+  if (!page) {
+    res.status(404).type('text/plain').send('Not Found');
+    return;
+  }
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json(page);
+});
+
+app.get('/api/sitemap', (_req, res) => {
+  // Minimal sitemap list — one entry the dev fixture knows how to render.
+  res.set('Cache-Control', 'public, max-age=300');
+  res.json([
+    { slug: '/', priority: 1 },
+    { slug: '/dark-page', priority: 0.7 },
+    { slug: '/gradient-page', priority: 0.7 },
+  ]);
 });
 
 /**
